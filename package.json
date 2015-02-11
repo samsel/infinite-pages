@@ -1,5 +1,5 @@
 {
-  "name": "react-page-swiper",
+  "name": "react-pages",
   "version": "1.0.0",
   "description": "swipable page component with react",
   "main": "lib/index.js",
@@ -17,7 +17,6 @@
   },
   "homepage": "https://github.com/samsel/react-page-swiper",
   "dependencies": {
-    "react": "^0.12.2",
     "swiper": "^2.7.5"
   },
   "devDependencies": {

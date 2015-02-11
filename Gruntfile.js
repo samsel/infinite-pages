@@ -11,7 +11,7 @@ module.exports = function(grunt) {
 
     browserify: {
       src: ['lib/index.js'],
-      dest: 'build/react-page-swiper.js',
+      dest: 'build/react-pages.js',
       options: {
         transform: ['reactify']
       }
