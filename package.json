@@ -1,0 +1,39 @@
+{
+  "name": "infinite-pages",
+  "version": "1.0.0",
+  "description": "proof of concept of an infinite page application with minimal DOM nodes",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "grunt test",
+    "postinstall": "grunt build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/samsel/react-page-swiper.git"
+  },
+  "author": "Sam Selvanathan",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/samsel/react-page-swiper/issues"
+  },
+  "homepage": "https://github.com/samsel/react-page-swiper",
+  "dependencies": {
+    "swiper": "^2.7.5",
+    "react": "^0.12.2"
+  },
+  "devDependencies": {
+    "esprima-fb": "^12001.1.0-dev-harmony-fb",
+    "grunt": "^0.4.5",
+    "grunt-browserify": "^3.3.0",
+    "grunt-contrib-copy": "^0.7.0",
+    "grunt-contrib-watch": "^0.6.1",
+    "grunt-jscs": "^1.5.0",
+    "grunt-jsxhint": "^0.5.0",
+    "jshint-stylish": "^1.0.0",
+    "lodash-node": "^3.1.0",
+    "react-tools": "^0.12.2",
+    "reactify": "^1.0.0",
+    "shush": "0.0.1",
+    "time-grunt": "^1.0.0"
+  }
+}

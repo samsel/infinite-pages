@@ -1,0 +1,7 @@
+{
+  "excludeFiles": ["node_modules/**", "build/**"],
+  "fileExtensions": [".js", ".jsx"],
+  "preset": "airbnb",
+  "validateIndentation": 2,
+  "requireMultipleVarDecl": null
+}
