@@ -10,10 +10,13 @@ module.exports = function(grunt) {
   grunt.initConfig({
 
     browserify: {
-      src: ['lib/index.js'],
-      dest: 'build/react-pages.js',
-      options: {
-        transform: ['reactify']
+      build: {
+        files: {
+          'build/infinite-pages.js': ['lib/index.jsx'],
+        },
+        options: {
+          transform: ['reactify']
+        }
       }
     },
 
@@ -40,6 +43,15 @@ module.exports = function(grunt) {
       }
     },
 
+    copy: {
+      main: {
+        src: 'node_modules/swiper/dist/idangerous.swiper.css',
+        dest: 'build/',
+        flatten: true,
+        expand: true
+      }
+    },
+
     watch: {
       scripts: {
         files: ['lib/**/*.*'],
@@ -55,9 +67,10 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-jscs');
   grunt.loadNpmTasks('grunt-jsxhint');
   grunt.loadNpmTasks('grunt-browserify');
+  grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-watch');
 
-  grunt.registerTask('build', ['browserify']);
+  grunt.registerTask('build', ['browserify', 'copy']);
   grunt.registerTask('test', ['jscs', 'jshint']);
 
   grunt.registerTask('default', ['watch']);
