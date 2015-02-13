@@ -1,5 +1,6 @@
 'use strict';
 
+var util = require('./util');
 var React = require('react');
 var Swiper = require('swiper');
 
@@ -16,13 +17,14 @@ var SwipeState = {
   prev: 'SlidePrev'
 };
 
-function HTMLCollectionToArray(HTMLCollection) {
-  return [].map.call(HTMLCollection, function(node) {
-    return node;
+var pageOrder = (function pageOrderGenerator() {
+  // returns: [0, 1, 2, 3, 4]
+  return Object.keys(classNames).map(function(name, index) {
+    return index;
   });
-}
+})();
 
-var pageOrder = [0, 1, 2, 3, 4];
+var doublePageOrder = pageOrder.concat(pageOrder);
 
 function nextIndicesForActiveIndex(index) {
 
@@ -31,22 +33,10 @@ function nextIndicesForActiveIndex(index) {
   // if index === 1, returns: [3, 4]
   // if index === 4, returns: [1, 2]
 
-  var start;
-  var end;
+  var start = index + 2;
+  var end = start + 2;
 
-  start = index + 2;
-
-  if (start >= pageOrder.length) {
-    start = (start % pageOrder.length);
-  }
-
-  end = start + 2;
-
-  if (end > pageOrder.length) {
-    end = (end % pageOrder.length) - 1;
-  }
-
-  return pageOrder.slice(start, end);
+  return doublePageOrder.slice(start, end);
 }
 
 function prevIndicesForActiveIndex(index) {
@@ -55,19 +45,88 @@ function prevIndicesForActiveIndex(index) {
 
 function indexToLeftOf(index) {
   return (pageOrder.slice(index - 1))[0];
-};
+}
 
 function indexToRightOf(index) {
   return (pageOrder.slice((index + 1) % pageOrder.length))[0];
-};
+}
 
-function create(onSwipeCallback) {
+function createPageSwiper(onSwipeCallback) {
 
-  var options = {
-    loop: true
+  var props = {
+
+    dispatch: {
+      value: function(options) {
+
+        var descriptors;
+        var offsets;
+
+        if (options && options.initial === true) {
+          offsets = [this.currentPageIndex,
+            this.currentPageIndex + 1,
+            this.currentPageIndex + 2,
+            this.currentPageIndex + 3,
+            this.currentPageIndex - 1];
+
+          descriptors = this.pages.map(function(nodes, index) {
+            return {
+              nodes: nodes,
+              offset: offsets[index]
+            };
+          });
+        }
+        else if (this.state === SwipeState.next) {
+          offsets = [this.currentPageIndex + 2,
+            this.currentPageIndex + 3];
+
+          descriptors = nextIndicesForActiveIndex(this.activeLoopIndex).map(function(pageIndex, index) {
+            return {
+              nodes: this.pages[pageIndex],
+              offset: offsets[index]
+            };
+          }, this);
+
+          if (this.stateChanged) {
+            descriptors.push({
+              nodes: this.pages[indexToRightOf(this.activeLoopIndex)],
+              offset: this.currentPageIndex + 1
+            });
+          }
+        }
+        else if (this.state === SwipeState.prev) {
+          offsets = [this.currentPageIndex - 2,
+            this.currentPageIndex - 3];
+
+          descriptors = prevIndicesForActiveIndex(this.activeLoopIndex).map(function(pageIndex, index) {
+            return {
+              nodes: this.pages[pageIndex],
+              offset: offsets[index]
+            };
+          }, this);
+
+          if (this.stateChanged) {
+            descriptors.push({
+              nodes: this.pages[indexToLeftOf(this.activeLoopIndex)],
+              offset: this.currentPageIndex - 1
+            });
+          }
+        }
+        else {
+          throw new Error('unknown state. developer bug!');
+        }
+
+        onSwipeCallback(descriptors);
+      },
+      writable: false,
+      enumerable: true
+    }
   };
 
-  var swiper = new Swiper('.swiper-container', options);
+  var proto = new Swiper('.swiper-container', {
+    loop: true
+  });
+
+  var swiper = Object.create(proto, props);
 
   Object.defineProperty(swiper, 'currentPageIndex', {
       value: 0,
@@ -80,108 +139,73 @@ function create(onSwipeCallback) {
   });
 
   (function statePropClosure() {
-    var _state;
-
-    Object.defineProperty(swiper, 'isInitialState', {
-      get: function() {
-          return _state === undefined;
-      }
-    });
+    // initial state
+    var _state = SwipeState.next;
 
     Object.defineProperty(swiper, 'state', {
 
         get: function() {
-            return _state;
+          return _state;
         },
 
         set: function(state) {
-          if (this.isInitialState) {
-            this.stateChanged = false;
-          }
-          else {
-            this.stateChanged = _state !== state;
-          }
-
+          this.stateChanged = _state !== state;
           state === SwipeState.next ? (this.currentPageIndex += 1) : (this.currentPageIndex -= 1);
-
           _state = state;
           this.dispatch();
         }
     });
   })();
 
-  var proto = {
-
-    reset: {
-      value: function() {
-        this.swipeTo(0, 0, false);
-      },
-      writable: false,
-      enumerable: true
-    },
-
-    dispatch: {
-      value: function() {
-
-        //params: state, activeIndex, directionChanged
-        // _this.state, _this.activeLoopIndex, stateChanged
-
-        var indices;
-
-        if (this.isInitialState) {
-          indices = [0, 4, 3, 2, 1];
-        }
-        else if (this.state === SwipeState.next) {
-          indices = nextIndicesForActiveIndex(this.activeLoopIndex);
-        }
-        else if (this.state === SwipeState.prev) {
-          indices = prevIndicesForActiveIndex(this.activeLoopIndex);
-        }
-        else {
-          throw new Error('unknown state. developer bug!');
-        }
-
-        onSwipeCallback(indices);
-      },
-      writable: false,
-      enumerable: true
-    }
-  };
-
-  return Object.create(swiper, proto);
-}
-
-module.exports = React.createClass({
-
-  componentDidMount: function componentDidMount() {
-
-    var swiper = create(this.props.onSwipe);
-    swiper.dispatch();
-
-    swiper.addCallback(SwipeState.next, function() {
-      swiper.state = SwipeState.next;
-    });
-
-    swiper.addCallback(SwipeState.prev, function() {
-      swiper.state = SwipeState.prev;
-    });
-
-    this.pages = this.computePages();
-  },
-
-  computePages: function pages() {
+  (function pagesPropClosure() {
+    var _pages;
 
     function getElementsByClassName(className) {
       return document.getElementsByClassName(className);
     }
 
-    return [
-      classNames.page0,
-      classNames.page1,
-      classNames.page2,
-      classNames.page3,
-      classNames.page4
-    ].map(getElementsByClassName).map(HTMLCollectionToArray);
+    function computePages() {
+
+      if (!_pages) {
+        _pages = [
+          classNames.page0,
+          classNames.page1,
+          classNames.page2,
+          classNames.page3,
+          classNames.page4
+        ].map(getElementsByClassName).map(util.HTMLCollectionToArray);
+      }
+
+      return _pages;
+    }
+
+    Object.defineProperty(swiper, 'pages', {
+      get: function() {
+        return computePages();
+      }
+    });
+
+  })();
+
+  swiper.addCallback(SwipeState.next, function() {
+    swiper.state = SwipeState.next;
+  });
+
+  swiper.addCallback(SwipeState.prev, function() {
+    swiper.state = SwipeState.prev;
+  });
+
+  swiper.dispatch({
+    initial: true
+  });
+
+  return swiper;
+}
+
+module.exports = React.createClass({
+
+  componentDidMount: function componentDidMount() {
+    createPageSwiper(this.props.onSwipe);
   },
 
   render: function render() {
