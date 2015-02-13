@@ -1,6 +1,6 @@
-React Pages
+Infinite Pages
 -----------
 
-a swipable pages library using React and Swiper
+proof of concept of an infinite page application with minimal DOM nodes
 
-[![Build Status](https://travis-ci.org/samsel/react-pages.svg)](https://travis-ci.org/samsel/react-pages)
+[![Build Status](https://travis-ci.org/samsel/infinite-pages.svg?branch=master)](https://travis-ci.org/samsel/infinite-pages)

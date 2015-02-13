@@ -4,11 +4,15 @@ var React = require('react');
 var Page = require('./page.jsx');
 var Swiper = require('./swiper.jsx');
 
-var component = React.render(<Swiper />, document.body);
+function onSwipe(data) {
+  console.log(data);
+}
 
-component.pages().map(function(page) {
-  page.map(function(node) {
-    React.render(<Page />, node)
-  });
-});
+React.render(<Swiper onSwipe={onSwipe}/>, document.body);
+
+// component.pages().map(function(page, index) {
+//   page.map(function(node) {
+//     React.render(<Page pageNumber={index} />, node)
+//   });
+// });
 

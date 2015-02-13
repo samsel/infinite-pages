@@ -8,7 +8,9 @@ module.exports = React.createClass({
 
     return (
       <div className='page'>
-        Page Content
+        <div className='content'>
+          <h1>Page {this.props.pageNumber}</h1>
+        </div>
       </div>
     );
   }
